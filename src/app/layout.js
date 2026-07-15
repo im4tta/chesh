@@ -26,10 +26,12 @@ const baloo = Baloo_2({
   weight: ["500", "600", "700", "800"],
 });
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export const metadata = {
   title: "Chesh — ចេះភាសាខ្មែរ",
   description: "Chesh helps you learn Khmer — alphabet, vocabulary, numbers, and more.",
-  manifest: "/assets/site.webmanifest",
+  manifest: `${basePath}/assets/site.webmanifest`,
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",

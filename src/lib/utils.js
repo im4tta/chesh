@@ -23,11 +23,12 @@ export function slugify(text) {
  * using the English name as the filename — no code changes needed.
  */
 export function getCardImageUrls(deckId, cardId, english = null) {
+  const prefix = process.env.NEXT_PUBLIC_BASE_PATH || "";
   const stems = [];
   if (english) stems.push(slugify(english));
   stems.push(cardId);
 
   return stems.flatMap((stem) =>
-    IMAGE_EXTENSIONS.map((ext) => `/images/decks/${deckId}/${stem}.${ext}`)
+    IMAGE_EXTENSIONS.map((ext) => `${prefix}/images/decks/${deckId}/${stem}.${ext}`)
   );
 }
