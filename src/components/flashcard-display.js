@@ -112,6 +112,37 @@ function LocalImage({ deckId, cardId, alt }) {
   );
 }
 
+const EDGE_THRESHOLD = 60;
+
+const GLOW = {
+  top: { shadow: "0 -12px 40px -8px hsl(var(--primary) / 0.4)", border: "border-primary/60" },
+  bottom: { shadow: "0 12px 40px -8px hsl(var(--success) / 0.4)", border: "border-success/60" },
+  left: { shadow: "-12px 0 40px -8px hsl(var(--ocean) / 0.4)", border: "border-ocean/60" },
+  right: { shadow: "12px 0 40px -8px hsl(var(--candy) / 0.4)", border: "border-candy/60" },
+};
+
+function useEdgeGlow() {
+  const [edge, setEdge] = useState(null);
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const dist = {
+      top: y,
+      bottom: rect.height - y,
+      left: x,
+      right: rect.width - x,
+    };
+    const min = Math.min(...Object.values(dist));
+    setEdge(min <= EDGE_THRESHOLD ? Object.keys(dist).find((k) => dist[k] === min) : null);
+  };
+
+  const handleMouseLeave = () => setEdge(null);
+
+  return { edge, handleMouseMove, handleMouseLeave };
+}
+
 export function FlashcardDisplay({
   card,
   sessionState,
@@ -123,6 +154,7 @@ export function FlashcardDisplay({
   const [showAnswer, setShowAnswer] = useState(false);
   const [canMarkAnswer, setCanMarkAnswer] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
+  const { edge, handleMouseMove, handleMouseLeave } = useEdgeGlow();
   const { speak, supported: speechSupported } = useSpeech();
 
   useEffect(() => {
@@ -165,10 +197,15 @@ export function FlashcardDisplay({
     );
   }
 
+  const glow = edge ? GLOW[edge] : null;
+
   return (
     <div
       key={card.id}
-      className={`w-full max-w-lg mx-auto bg-card rounded-3xl border-4 shadow-lg animate-pop-in overflow-hidden ${celebrate ? "animate-celebrate" : ""} ${!showAnswer ? "border-primary/30" : "border-success/30"}`}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className={`w-full max-w-lg mx-auto bg-card rounded-3xl border-4 animate-pop-in overflow-hidden transition-shadow duration-150 ${celebrate ? "animate-celebrate" : ""} ${glow ? glow.border : !showAnswer ? "border-primary/30" : "border-success/30"} ${glow ? "shadow-none" : "shadow-lg"}`}
+      style={glow ? { boxShadow: glow.shadow } : undefined}
     >
       <div className="p-6 sm:p-8">
         <div className="text-center space-y-4">
