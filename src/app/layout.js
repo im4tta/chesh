@@ -29,6 +29,21 @@ const baloo = Baloo_2({
 export const metadata = {
   title: "កាតរៀនភាសាខ្មែរ — Khmer Kids Flashcards",
   description: "Bilingual Khmer/English flashcards for kids: alphabet, numbers, colors, animals, family, and more.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.svg", sizes: "192x192", type: "image/svg+xml" },
+      { url: "/icon-512.svg", sizes: "512x512", type: "image/svg+xml" },
+    ],
+    apple: { url: "/icon-192.svg", type: "image/svg+xml" },
+  },
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+    "apple-mobile-web-app-title": "Khmer Flashcards",
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export default function RootLayout({ children }) {

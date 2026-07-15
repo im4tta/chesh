@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FEF3C7"/>
+      <stop offset="100%" stop-color="#FDE68A"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="36" fill="url(#bg)"/>
+  <rect x="18" y="30" width="156" height="132" rx="12" fill="white" stroke="#D97706" stroke-width="5"/>
+  <text x="96" y="85" font-family="serif" font-size="72" font-weight="bold" fill="#92400E" text-anchor="middle" dominant-baseline="central">ក</text>
+  <text x="96" y="138" font-family="sans-serif" font-size="18" fill="#B45309" text-anchor="middle" font-weight="500">FLASHCARDS</text>
+  <circle cx="30" cy="30" r="9" fill="#F59E0B"/>
+  <circle cx="52" cy="30" r="9" fill="#F59E0B" opacity="0.6"/>
+</svg>
