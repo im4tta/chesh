@@ -38,10 +38,10 @@ export class SessionManager {
    *   Infinity to study the whole deck.
    * @returns {Object} New session object
    */
-  createSession(deckId, cardCount = Infinity) {
+  createSession(deckId, cardCount = Infinity, mode = "random") {
     const sessionId = this.generateSessionId();
     const allCards = getAllCards(deckId);
-    const cards = masteryStore.buildStudyQueue(deckId, allCards, cardCount);
+    const cards = masteryStore.buildStudyQueue(deckId, allCards, cardCount, mode);
     const deckMeta = getDeckMeta(deckId);
 
     this.currentSession = {
@@ -49,6 +49,8 @@ export class SessionManager {
       deckId,
       deckTitle: deckMeta ? deckMeta.titleEnglish : deckId,
       deckTitleKhmer: deckMeta ? deckMeta.title : "",
+      lessonContent: deckMeta ? deckMeta.lessonContent : null,
+      studyMode: mode,
       cards,
       currentCardIndex: 0,
       responses: [],

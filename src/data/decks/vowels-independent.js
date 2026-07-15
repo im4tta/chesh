@@ -11,6 +11,15 @@ export const deckMeta = {
   // Fixed: U+17B1 ឱ and U+17B2 ឲ were both mislabeled "oa" (should be "ao"),
   // matching the same transposition error found in the dependent-vowel deck.
   needsVerification: false,
+  lessonContent: [
+    {
+      title: "១. ស្រៈពេញតួ (Independent Vowels)",
+      paragraphs: [
+        "ស្រៈពេញតួ គឺជាស្រៈសុទ្ធដែលអាចចេញសំឡេងតាមទំនើងខ្លួនឯងបាន (ត្រូវសរសេរពេញតួ)។ ស្រៈទាំងនេះមានចំនួន ១៥ តួ (រាប់បញ្ចូលទាំងស្រៈដែលប្រើក្នុងភាសាបាលី និងសំស្ក្រឹត)៖",
+      ],
+      vowelList: ["អ", "អា", "ឥ", "ឦ", "ឧ", "ឩ", "ឪ", "ឫ", "ឬ", "ឭ", "ឮ", "ឯ", "ឰ", "ឱ", "ឳ"],
+    },
+  ],
 };
 
 const items = [

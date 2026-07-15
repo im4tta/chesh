@@ -1,3 +1,5 @@
+const CARRIER = "\u1780";
+
 export const deckMeta = {
   id: "vowels-dependent",
   title: "ស្រៈនិស្ស័យ",
@@ -6,15 +8,9 @@ export const deckMeta = {
   description: "Vowel signs that attach to a consonant — shown here with ក",
   category: "literacy",
   order: 4,
-  // Verified against the Unicode Khmer block chart (U+17B6-U+17C8) and the
-  // Wikipedia "Khmer script" dependent-vowel table (GD/UNGEGN romanization,
-  // a-series column, since the carrier ក is an a-series/Series 1 letter).
-  // Fixed: U+17C4 ោ was mislabeled "oa" (should be "ao") and U+17C5 ៅ was
-  // mislabeled "ao" (should be "au") — the two had been transposed.
   needsVerification: false,
 };
 
-const CARRIER = "\u1780";
 const items = [
   { sign: "\u17B6", english: "Vowel sign a (aa)" },
   { sign: "\u17B7", english: "Vowel sign i" },

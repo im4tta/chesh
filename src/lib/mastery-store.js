@@ -2,25 +2,34 @@
  * MasteryStore — persistent, cross-session learning progress.
  *
  * This is what turns the app from "shuffle and show cards" into an actual
- * spaced-repetition learning system. Every card lives in one of 6 Leitner
- * boxes (0 = just missed / brand new, 5 = well mastered). A correct
- * answer promotes a card to the next box and schedules it further into
- * the future; a wrong answer drops it straight back to box 0 so it comes
- * up again soon. Session queues (see session-manager.js) are built by
- * prioritizing whatever is due, mixed with a few new cards at a time —
- * this is the same "little and often, review what you're forgetting"
- * principle used in most literacy drilling.
+ * spaced-repetition learning system. Every card lives in one of 5 Leitner
+ * boxes (0 = new / needs work, 4 = mastered). A correct answer promotes a
+ * card to the next box and schedules it further into the future.
+ *
+ * Tuned for kids rather than adult Anki-style drilling:
+ *  - A wrong answer only drops a card ONE box, not all the way back to 0.
+ *    A single slip shouldn't erase a week of real progress — that reads
+ *    as punishment to a child, not feedback.
+ *  - Mastery only needs 4 correct answers in a row (not 5), and the
+ *    interval ramp is shorter, so "mastered" is a reachable payoff
+ *    instead of a multi-week grind.
+ *
+ * Session queues (see session-manager.js) are built by prioritizing
+ * whatever is due, mixed with a few new cards at a time — this is the
+ * same "little and often, review what you're forgetting" principle used
+ * in most literacy drilling.
  *
  * Storage is localStorage (survives closing the browser), separate from
- * storage-adapter.js which uses sessionStorage for the transient
- * in-progress session only.
+ * storage-adapter.js which handles the transient in-progress session.
  */
 
 const STORAGE_KEY = "khmer_flashcard_mastery_v1";
-const MAX_BOX = 5;
+export const MAX_BOX = 4;
 
-// Days until a card in a given box is due again.
-const BOX_INTERVAL_DAYS = [0, 1, 2, 4, 9, 18];
+// Days until a card in a given box is due again. Shorter ramp than a
+// typical adult SRS schedule — this app is used in bursts, not daily
+// drilling, so a card shouldn't disappear from rotation for over a week.
+const BOX_INTERVAL_DAYS = [0, 1, 2, 5, 10];
 
 function isBrowser() {
   return typeof window !== "undefined";
@@ -58,10 +67,23 @@ function loadAll() {
   }
 }
 
+const listeners = new Set();
+
+function notify() {
+  try { window.dispatchEvent(new CustomEvent("mastery-changed")); } catch {}
+  listeners.forEach((fn) => { try { fn(); } catch {} });
+}
+
+export function onMasteryChange(fn) {
+  listeners.add(fn);
+  return () => listeners.delete(fn);
+}
+
 function saveAll(data) {
   if (!isBrowser()) return false;
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    notify();
     return true;
   } catch {
     return false;
@@ -87,7 +109,13 @@ export const masteryStore = {
       nextDue: 0,
     };
 
-    const box = isCorrect ? Math.min(existing.box + 1, MAX_BOX) : 0;
+    // A miss costs one box, not everything — one slip shouldn't undo a
+    // week of real progress. It still comes back due almost immediately
+    // (box 0-2 intervals are 0-2 days) so the review cadence is barely
+    // affected, but the child's earned progress isn't erased.
+    const box = isCorrect
+      ? Math.min(existing.box + 1, MAX_BOX)
+      : Math.max(existing.box - 1, 0);
 
     all.decks[deckId][cardId] = {
       box,
@@ -114,10 +142,16 @@ export const masteryStore = {
    * @param {Array} allCards - full card list for the deck
    * @param {number} sessionSize - Infinity for the whole deck
    */
-  buildStudyQueue(deckId, allCards, sessionSize = Infinity) {
+  buildStudyQueue(deckId, allCards, sessionSize = Infinity, mode = "random") {
     const all = loadAll();
     const records = all.decks[deckId] || {};
     const now = nowMs();
+
+    if (mode === "sequential") {
+      const queue = [...allCards];
+      if (!Number.isFinite(sessionSize)) return queue;
+      return queue.slice(0, Math.min(sessionSize, queue.length));
+    }
 
     const due = [];
     const fresh = [];
@@ -135,7 +169,6 @@ export const masteryStore = {
     }
 
     const shuffle = (arr) => [...arr].sort(() => 0.5 - Math.random());
-    // Sort due cards by most-overdue first, keeps struggling cards visible.
     due.sort((a, b) => (records[a.id]?.nextDue ?? 0) - (records[b.id]?.nextDue ?? 0));
 
     const queue = [...due, ...shuffle(fresh), ...shuffle(notDue)];
@@ -146,6 +179,15 @@ export const masteryStore = {
   /**
    * Aggregate stats for a deck, used for the mastery badge on the deck
    * picker (e.g. "18/33 mastered").
+   *
+   * `masteryPercent` only counts cards that hit MAX_BOX, which needs 5
+   * correct answers in a row — by design, so a couple of correct taps
+   * doesn't look "learned" too soon. But that means it's a bad signal
+   * for "is anything being saved at all", especially right after a
+   * short study session. `learningPercent` is the fix: a weighted
+   * percent (box / MAX_BOX, averaged across every card ever seen) that
+   * moves visibly after every single answer, so progress is never
+   * invisible even before a card is fully mastered.
    */
   getDeckStats(deckId, totalCards) {
     const all = loadAll();
@@ -153,9 +195,11 @@ export const masteryStore = {
     let mastered = 0;
     let inProgress = 0;
     let seen = 0;
+    let boxSum = 0;
 
     Object.values(records).forEach((rec) => {
       seen++;
+      boxSum += rec.box;
       if (rec.box >= MAX_BOX) mastered++;
       else if (rec.box > 0) inProgress++;
     });
@@ -167,6 +211,11 @@ export const masteryStore = {
       inProgressCount: inProgress,
       newCount: Math.max(totalCards - seen, 0),
       masteryPercent: totalCards > 0 ? Math.round((mastered / totalCards) * 100) : 0,
+      // Weighted across the WHOLE deck (unseen cards count as 0 box),
+      // so this number starts near 0 and creeps up with every answer
+      // instead of jumping only when a card hits full mastery.
+      learningPercent:
+        totalCards > 0 ? Math.round((boxSum / (MAX_BOX * totalCards)) * 100) : 0,
     };
   },
 

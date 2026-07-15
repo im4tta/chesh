@@ -28,6 +28,11 @@ import * as dailyItems from "./decks/daily-items.js";
 import * as buildings from "./decks/buildings.js";
 import * as relatives from "./decks/relatives.js";
 import * as feelings from "./decks/feelings.js";
+import * as weather from "./decks/weather.js";
+import * as transportation from "./decks/transportation.js";
+import * as nature from "./decks/nature.js";
+import * as jobs from "./decks/jobs.js";
+import * as fruits from "./decks/fruits.js";
 
 const decks = [
   consonants,
@@ -49,6 +54,11 @@ const decks = [
   buildings,
   relatives,
   feelings,
+  weather,
+  transportation,
+  nature,
+  jobs,
+  fruits,
 ];
 
 /**

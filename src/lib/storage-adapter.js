@@ -1,6 +1,13 @@
 /**
  * StorageAdapter - Browser storage interface with fallback
  * Provides persistent session storage with error handling
+ *
+ * Uses localStorage rather than sessionStorage. sessionStorage is scoped
+ * to the browser tab's lifetime — on mobile, backgrounding or the OS
+ * killing an installed PWA can wipe it, which looks exactly like a lost
+ * session to a kid mid-flashcard. localStorage survives that, so
+ * closing the app and coming back resumes where they left off instead
+ * of silently restarting.
  */
 
 export class StorageAdapter {
@@ -12,11 +19,11 @@ export class StorageAdapter {
   checkStorageAvailability() {
     try {
       const test = "__storage_test__";
-      sessionStorage.setItem(test, test);
-      sessionStorage.removeItem(test);
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
       return true;
     } catch (e) {
-      console.warn("SessionStorage not available, using fallback storage");
+      console.warn("localStorage not available, using fallback storage");
       return false;
     }
   }
@@ -30,7 +37,7 @@ export class StorageAdapter {
       });
 
       if (this.storageAvailable) {
-        sessionStorage.setItem(key, serializedData);
+        localStorage.setItem(key, serializedData);
       } else {
         this.fallbackStorage.set(key, serializedData);
       }
@@ -46,7 +53,7 @@ export class StorageAdapter {
       let serializedData;
 
       if (this.storageAvailable) {
-        serializedData = sessionStorage.getItem(key);
+        serializedData = localStorage.getItem(key);
       } else {
         serializedData = this.fallbackStorage.get(key);
       }
@@ -74,7 +81,7 @@ export class StorageAdapter {
   removeItem(key) {
     try {
       if (this.storageAvailable) {
-        sessionStorage.removeItem(key);
+        localStorage.removeItem(key);
       } else {
         this.fallbackStorage.delete(key);
       }
@@ -88,7 +95,7 @@ export class StorageAdapter {
   clear() {
     try {
       if (this.storageAvailable) {
-        sessionStorage.clear();
+        localStorage.clear();
       } else {
         this.fallbackStorage.clear();
       }
@@ -102,7 +109,7 @@ export class StorageAdapter {
   getAllKeys() {
     try {
       if (this.storageAvailable) {
-        return Object.keys(sessionStorage);
+        return Object.keys(localStorage);
       } else {
         return Array.from(this.fallbackStorage.keys());
       }
@@ -114,7 +121,7 @@ export class StorageAdapter {
 
   hasItem(key) {
     if (this.storageAvailable) {
-      return sessionStorage.getItem(key) !== null;
+      return localStorage.getItem(key) !== null;
     } else {
       return this.fallbackStorage.has(key);
     }

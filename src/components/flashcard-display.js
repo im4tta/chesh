@@ -1,17 +1,116 @@
 "use client";
 
-/**
- * FlashcardDisplay - Individual flashcard component with two-step interaction flow
- * Shows the Khmer side first, then reveals the English meaning.
- */
-
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { getCardImageUrls } from "@/lib/utils";
 import { useFlashcardKeyboard } from "@/hooks/use-keyboard";
 import { useSpeech } from "@/hooks/use-speech";
 import { SESSION_STATES } from "@/lib/session-manager";
+import { masteryStore, onMasteryChange, MAX_BOX } from "@/lib/mastery-store";
+
+// Small "how well do you know this card" indicator — reads straight from
+// the saved mastery record so a tap on "Yes!" shows up here immediately,
+// instead of the only feedback being a deck-wide badge the learner isn't
+// even looking at during a session.
+function CardProgressDots({ deckId, cardId }) {
+  const [box, setBox] = useState(0);
+
+  useEffect(() => {
+    const read = () => setBox(masteryStore.getCardRecord(deckId, cardId)?.box ?? 0);
+    read();
+    const unsub = onMasteryChange(read);
+    return unsub;
+  }, [deckId, cardId]);
+
+  if (!deckId || !cardId) return null;
+
+  return (
+    <div className="flex items-center justify-center gap-1" aria-label={`Progress: box ${box} of ${MAX_BOX}`}>
+      {Array.from({ length: MAX_BOX }).map((_, i) => (
+        <span
+          key={i}
+          className={`w-2 h-2 rounded-full transition-all ${
+            i < box ? "bg-success scale-110" : "bg-muted"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ImageLightbox({ src, alt, onClose }) {
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 animate-fade-in"
+      onClick={onClose}
+    >
+      <img
+        src={src}
+        alt={alt}
+        className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl animate-pop-in cursor-zoom-out"
+      />
+    </div>
+  );
+}
+
+function LocalImage({ deckId, cardId, alt }) {
+  const candidates = getCardImageUrls(deckId, cardId, alt);
+  const [index, setIndex] = useState(0);
+  const [found, setFound] = useState(null);
+  const [lightbox, setLightbox] = useState(false);
+
+  useEffect(() => {
+    setIndex(0);
+    setFound(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deckId, cardId]);
+
+  useEffect(() => {
+    if (index >= candidates.length) return;
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => {
+      if (!cancelled) setFound(candidates[index]);
+    };
+    img.onerror = () => {
+      if (!cancelled) setIndex((i) => i + 1);
+    };
+    img.src = candidates[index];
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, deckId, cardId]);
+
+  if (!found) return null;
+  return (
+    <>
+      <button
+        onClick={() => setLightbox(true)}
+        className="mx-auto block cursor-zoom-in focus:outline-none"
+        aria-label={`View ${alt} full size`}
+      >
+        <img
+          src={found}
+          alt={alt}
+          className="w-40 h-40 sm:w-48 sm:h-48 object-cover rounded-2xl border-4 border-white shadow-lg animate-bounce-in hover:scale-105 hover:shadow-xl transition-all"
+        />
+      </button>
+      {lightbox && (
+        <ImageLightbox src={found} alt={alt} onClose={() => setLightbox(false)} />
+      )}
+    </>
+  );
+}
 
 export function FlashcardDisplay({
   card,
@@ -19,10 +118,11 @@ export function FlashcardDisplay({
   onRevealAnswer,
   onMarkCorrect,
   onMarkIncorrect,
-  className = "",
+  deckId,
 }) {
   const [showAnswer, setShowAnswer] = useState(false);
   const [canMarkAnswer, setCanMarkAnswer] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   const { speak, supported: speechSupported } = useSpeech();
 
   useEffect(() => {
@@ -30,23 +130,20 @@ export function FlashcardDisplay({
     setCanMarkAnswer(sessionState === SESSION_STATES.SHOW_ANSWER);
   }, [sessionState]);
 
-  // Re-run the little pop-in animation for a fresh card by keying on card.id
-  // in the JSX below, rather than tracking transition state here.
-
   const handleRevealAnswer = () => {
-    if (sessionState === SESSION_STATES.SHOW_CLUE && onRevealAnswer) {
-      onRevealAnswer();
-    }
+    if (sessionState === SESSION_STATES.SHOW_CLUE && onRevealAnswer) onRevealAnswer();
   };
 
-  const handleMarkCorrect = () => {
+  const handleCorrect = () => {
     if (canMarkAnswer && onMarkCorrect) {
+      setCelebrate(true);
+      setTimeout(() => setCelebrate(false), 600);
       onMarkCorrect(true);
       setCanMarkAnswer(false);
     }
   };
 
-  const handleMarkIncorrect = () => {
+  const handleIncorrect = () => {
     if (canMarkAnswer && onMarkIncorrect) {
       onMarkIncorrect(false);
       setCanMarkAnswer(false);
@@ -55,130 +152,98 @@ export function FlashcardDisplay({
 
   useFlashcardKeyboard({
     onRevealAnswer: sessionState === SESSION_STATES.SHOW_CLUE ? handleRevealAnswer : undefined,
-    onMarkCorrect: canMarkAnswer ? handleMarkCorrect : undefined,
-    onMarkIncorrect: canMarkAnswer ? handleMarkIncorrect : undefined,
+    onMarkCorrect: canMarkAnswer ? handleCorrect : undefined,
+    onMarkIncorrect: canMarkAnswer ? handleIncorrect : undefined,
     enabled: true,
   });
 
   if (!card) {
     return (
-      <Card className={`w-full max-w-2xl mx-auto ${className}`}>
-        <CardContent className="flex items-center justify-center p-8">
-          <p className="text-muted-foreground">No card available</p>
-        </CardContent>
-      </Card>
+      <div className="w-full max-w-lg mx-auto bg-card rounded-3xl border-4 border-muted p-8 text-center">
+        <p className="text-lg text-muted-foreground">No card available</p>
+      </div>
     );
   }
 
-  const seriesTone = card.series === 1 ? "sky" : card.series === 2 ? "secondary" : null;
-
   return (
-    <Card
+    <div
       key={card.id}
-      className={`w-full max-w-2xl mx-auto border-2 animate-pop-in ${className}`}
+      className={`w-full max-w-lg mx-auto bg-card rounded-3xl border-4 shadow-lg animate-pop-in overflow-hidden ${celebrate ? "animate-celebrate" : ""} ${!showAnswer ? "border-primary/30" : "border-success/30"}`}
     >
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {showAnswer ? "Meaning" : "What does this say?"}
-          </CardTitle>
-          <div className="flex items-center gap-2 shrink-0">
-            {card.needsVerification && (
-              <Badge tone="warning">Pending review</Badge>
-            )}
-            {seriesTone && card.seriesLabel && (
-              <Badge tone={seriesTone}>{card.seriesLabel}</Badge>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-6">
-        {/* Khmer side - always visible, this is the "question" */}
-        <div className="text-center py-4 relative space-y-4">
-          {card.image && (
-            <div className="flex justify-center">
-              <img
-                src={card.image}
-                alt={card.english}
-                className="w-48 h-48 sm:w-56 sm:h-56 object-cover rounded-2xl shadow-md border border-amber-200 animate-pop-in"
-                loading="lazy"
-              />
-            </div>
+      <div className="p-6 sm:p-8">
+        <div className="text-center space-y-4">
+          <LocalImage deckId={deckId} cardId={card.id} alt={card.english} />
+          {card.emoji && !showAnswer && (
+            <span className="inline-block text-4xl sm:text-5xl animate-float leading-none">{card.emoji}</span>
           )}
-          {card.emoji && <div className="text-5xl mb-2">{card.emoji}</div>}
           <div className="flex items-center justify-center gap-3">
-            <p className="khmer-text text-6xl sm:text-7xl font-bold leading-relaxed">
+            <p className="khmer-text text-5xl sm:text-6xl font-bold leading-relaxed text-foreground">
               {card.khmer}
             </p>
             {speechSupported && (
               <button
                 onClick={() => speak(card.khmer)}
-                aria-label="Play pronunciation"
-                className="shrink-0 w-11 h-11 rounded-full bg-sky/10 hover:bg-sky/20 text-sky flex items-center justify-center transition-colors active:scale-95"
+                aria-label="Listen"
+                className="shrink-0 w-12 h-12 rounded-full bg-ocean/10 hover:bg-ocean/20 text-ocean flex items-center justify-center transition-all active:scale-90 text-xl"
               >
-                <span className="text-xl">🔊</span>
+                🔊
               </button>
             )}
           </div>
           {card.secondary && (
-            <p className="khmer-text text-3xl text-muted-foreground mt-2">{card.secondary}</p>
+            <p className="khmer-text text-2xl text-muted-foreground">{card.secondary}</p>
           )}
+          <CardProgressDots deckId={deckId} cardId={card.id} />
         </div>
 
-        {/* English answer, only shown when revealed */}
         {showAnswer && (
-          <div className="text-center border-t pt-6 animate-bounce-in">
+          <div className="text-center mt-6 pt-6 border-t-2 border-dashed border-muted animate-bounce-in">
             <p className="text-3xl font-bold text-success">{card.english}</p>
           </div>
         )}
-      </CardContent>
 
-      <CardFooter className="flex flex-col space-y-4">
+        {card.needsVerification && (
+          <div className="mt-4 text-center">
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 border border-amber-300 px-3 py-1 text-xs font-semibold text-amber-700">
+              Pending review
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="px-6 pb-6 sm:px-8 sm:pb-8 space-y-3">
         {sessionState === SESSION_STATES.SHOW_CLUE && (
-          <div className="text-center w-full">
-            <Button
+          <div className="text-center">
+            <button
               onClick={handleRevealAnswer}
-              size="lg"
-              className="w-full max-w-md h-14 text-base rounded-full bg-primary text-primary-foreground hover:opacity-90 shadow-md"
+              className="w-full py-4 px-6 rounded-2xl bg-primary text-primary-foreground font-bold text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-md animate-pulse-glow"
             >
-              Reveal Meaning
-              <span className="ml-2 text-xs opacity-75 hidden sm:inline">(Space/Enter)</span>
-            </Button>
-            <p className="text-sm text-muted-foreground mt-2">
-              Say it out loud, then reveal to check
-            </p>
+              Show Answer! ✨
+            </button>
+            <p className="text-xs text-muted-foreground mt-2">Say it out loud first!</p>
           </div>
         )}
 
         {canMarkAnswer && (
-          <div className="w-full space-y-3">
-            <p className="text-center text-sm font-medium">Did you get it right?</p>
-            <div className="flex gap-3 justify-center">
-              <Button
-                onClick={handleMarkCorrect}
-                size="lg"
-                className="flex-1 max-w-52 h-14 rounded-full bg-success text-success-foreground hover:opacity-90 shadow-md text-base"
+          <div className="space-y-3">
+            <p className="text-center text-sm font-bold text-muted-foreground">Did you get it right?</p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleCorrect}
+                className="flex-1 py-4 rounded-2xl bg-success text-success-foreground font-bold text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-md"
               >
-                ✓ Correct
-                <span className="ml-1 text-xs opacity-75 hidden sm:inline">(→/Y)</span>
-              </Button>
-              <Button
-                onClick={handleMarkIncorrect}
-                size="lg"
-                className="flex-1 max-w-52 h-14 rounded-full bg-secondary text-secondary-foreground hover:opacity-90 shadow-md text-base"
+                ✅ Yes!
+              </button>
+              <button
+                onClick={handleIncorrect}
+                className="flex-1 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-md"
               >
-                ✗ Not yet
-                <span className="ml-1 text-xs opacity-75 hidden sm:inline">(←/N)</span>
-              </Button>
+                🔄 Try Again
+              </button>
             </div>
           </div>
         )}
-
-        <div className="text-xs text-center text-muted-foreground opacity-60">
-          <p>Keyboard: Space/Enter to reveal • Arrow keys or Y/N to mark • ESC for menu</p>
-        </div>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 }

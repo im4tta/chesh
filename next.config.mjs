@@ -9,13 +9,7 @@ const nextConfig = {
           { key: "Service-Worker-Allowed", value: "/" },
         ],
       },
-      {
-        source: "/manifest.json",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=3600" },
-          { key: "Content-Type", value: "application/manifest+json" },
-        ],
-      },
+
     ];
   },
 };

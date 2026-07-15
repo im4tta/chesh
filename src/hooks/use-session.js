@@ -43,10 +43,10 @@ export function useSession() {
    * @param {number} cardCount - Infinity to study the whole deck
    */
   const createNewSession = useCallback(
-    (deckId, cardCount = Infinity) => {
+    (deckId, cardCount = Infinity, mode = "random") => {
       try {
         setLoading(true);
-        sessionManager.createSession(deckId, cardCount);
+        sessionManager.createSession(deckId, cardCount, mode);
         updateSessionState();
         setLoading(false);
         return true;

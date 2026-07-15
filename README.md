@@ -1,13 +1,14 @@
 <div align="center">
 
+<img src="https://raw.githubusercontent.com/im4tta/kflashcard/main/public/icon.svg" width="72" height="72" alt="App icon">
+
 # កាតរៀនភាសាខ្មែរ — Khmer Kids Flashcards
 
-*Bilingual Khmer/English flashcards for kids*
+*Bilingual Khmer/English flashcards for kids — no accounts, no tracking.*
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.2-000000?style=flat-square&logo=next.js)](https://nextjs.org)
+[![PWA](https://img.shields.io/badge/PWA-ready-5A0FC8?style=flat-square)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE)
-
-**No database, no accounts — just open it and start studying.**
 
 </div>
 
@@ -20,37 +21,70 @@ npm install
 npm run dev        # → http://localhost:3000
 ```
 
-Pick a deck, and start flipping cards.
+Pick a deck and start flipping cards.
 
 ---
 
 ## ✨ Features
 
-| | Feature | Description |
+| | Feature | |
 |---|---|---|
-| 🌐 | **Bilingual** | Khmer script + English meaning on every card |
-| 📚 | **12+ decks** | Consonants, subscripts, vowels, numbers, colors, animals, family, greetings, food, body parts, days, and more |
-| 🔤 | **Proper Khmer rendering** | Noto Sans Khmer via `next/font/google` for correct script display |
-| 🔽 | **Subscript consonants** | 33 sub-consonant forms generated mechanically via Unicode COENG (U+17D2) |
+| 🎨 | **Kids-friendly UI** | Bright candy palette, big emoji, playful animations, extra-rounded corners |
+| 📚 | **19 decks** | Consonants → subscripts → vowels → numbers → colors → animals → food → family → body parts → solar system → days → months → time → daily items → buildings → relatives → feelings |
 | 🆎 | **Vowel coverage** | Independent vowels & dependent vowel signs, flagged for native-speaker review |
-| ⌨️ | **Keyboard shortcuts** | Space/Enter to reveal, arrows or Y/N to mark right/wrong, ESC for menu |
-| 📊 | **Honest scoring** | Kids self-report right/wrong — no gotchas, no pressure |
-| 💾 | **Session persistence** | Progress in the current deck survives a page refresh |
+| 🔤 | **Proper Khmer rendering** | Noto Sans Khmer via `next/font/google` for correct script display |
+| 🖼️ | **Auto-detected images** | Drop kid-safe photos into `public/images/decks/{deckId}/{cardId}.jpg` — they appear on cards automatically |
+| ⭐ | **Spaced repetition** | Built-in Leitner-box system (6 levels). Cards you miss come back sooner |
+| 📋 | **Word list panel** | See all session words alongside the flashcard with ✅/🔄 status per card — no more guessing what's left |
+| 🔊 | **Pronunciation** | Browser-native speech synthesis for Khmer (tap the speaker icon) |
+| ⌨️ | **Keyboard shortcuts** | Space/Enter to reveal, arrows or Y/N to mark right/wrong |
+| 📱 | **PWA** | Install on your home screen, works offline, receives update notifications |
+| 💾 | **Session persistence** | Progress survives a page refresh |
 | 🔒 | **No tracking** | No accounts, no analytics, nothing leaves the browser |
+| 🌐 | **Bilingual** | Khmer script + English meaning on every card |
 
 ---
 
 ## 📖 How It Works
 
 ```
-Choose a deck (e.g. Colors — ពណ៌)
-        ↓
-See the Khmer word/letter → say it out loud → reveal the English meaning
-        ↓
-Mark yourself correct or incorrect → next card
-        ↓
+Choose a deck
+    ↓
+See the Khmer word + emoji → say it out loud → tap "Show Answer"
+    ↓
+Mark yourself correct (✅) or needs review (🔄)
+    ↓
 See your score → study again or pick another deck
 ```
+
+All progress saves automatically. Missed cards come back within the same session so kids keep practicing until it sticks.
+
+---
+
+## 🧠 Spaced Repetition (Leitner System)
+
+| Box | Interval | Meaning |
+|-----|----------|---------|
+| 0 | Immediate | Just missed — must retry now |
+| 1 | 1 day | Beginning to stick |
+| 2 | 2 days | Getting familiar |
+| 3 | 4 days | Solid recognition |
+| 4 | 9 days | Strong recall |
+| 5 | 18 days | Mastered |
+
+Correct answers promote a card up one box. Wrong answers drop it back to box 0. Progress persists in `localStorage`.
+
+---
+
+## 🖼️ Adding Photos to Cards
+
+The app uses **emoji-only by default** (safe for everyone). To add real photos:
+
+1. Generate kid-safe images (see [IMAGE_SETUP.md](IMAGE_SETUP.md) for Gemini prompt templates)
+2. Save to `public/images/decks/{deckId}/{cardId}.jpg`
+3. Restart the dev server — images appear automatically next to each card's emoji
+
+Missing images are handled silently (emoji fallback). You can add images one deck at a time.
 
 ---
 
@@ -59,100 +93,70 @@ See your score → study again or pick another deck
 ```
 src/
 ├── app/
-│   ├── layout.js               # Root layout, loads Khmer font
-│   ├── page.js                 # Renders <FlashcardApp />
-│   └── globals.css             # Theme + .khmer-text font utility
+│   ├── layout.js             # Root layout, fonts, PWA meta tags
+│   ├── page.js               # Entry point
+│   └── globals.css           # Kids-friendly theme + animations
 ├── components/
-│   ├── flashcard-app.js        # Root: deck picker <-> session state machine
-│   ├── deck-selector.js        # Grid of deck cards, grouped by category
-│   ├── flashcard-session.js    # Orchestrates one study session
-│   ├── flashcard-display.js    # Single card: Khmer front, English back
-│   ├── session-progress.js     # Progress bar + running score
-│   ├── session-results.js      # End-of-session summary with stars
-│   └── ui/                     # Badge, Button, Card, Progress (shadcn-style)
+│   ├── flashcard-app.js      # Root: deck picker ↔ session state
+│   ├── deck-selector.js      # Colorful deck grid with star mastery
+│   ├── flashcard-session.js  # Orchestrates one study session
+│   ├── flashcard-display.js  # Card: Khmer front, English flip side
+│   ├── session-progress.js   # Animated progress bar + dot track
+│   ├── session-results.js    # End-of-session celebration with stars
+│   ├── word-list.js          # Sidebar showing all words + status
+│   └── update-toast.js       # PWA update notification
 ├── data/
-│   ├── deck-registry.js        # Central deck list — add a deck here
-│   └── decks/
-│       ├── consonants.js       # 33 consonants (letter + series recognition)
-│       ├── subscript-consonants.js  # 33 subscripts via COENG carrier
-│       ├── vowels-independent.js    # 15 independent vowels ⚠️
-│       ├── vowels-dependent.js      # 19 dependent vowel signs ⚠️
-│       ├── numbers.js           # 0–10 (numeral + Khmer word + English)
-│       ├── colors.js, animals.js, family.js, greetings.js, food.js
-│       ├── body-parts.js, days.js
-│       └── ...                 # Additional community decks
+│   ├── deck-registry.js      # Central deck list — add a deck here
+│   └── decks/                # 19 deck files (consonants → feelings)
 ├── hooks/
-│   ├── use-session.js          # React state wrapper around sessionManager
-│   ├── use-keyboard.js         # Keyboard shortcut hooks
-│   └── use-speech.js           # Web Speech API for Khmer pronunciation
+│   ├── use-session.js        # React wrapper around sessionManager
+│   ├── use-keyboard.js       # Keyboard shortcut hooks
+│   └── use-speech.js         # Web Speech API for Khmer
 └── lib/
-    ├── mastery-store.js        # Leitner-box spaced repetition (6 boxes)
-    ├── session-manager.js      # Session state machine (deck-aware)
-    ├── storage-adapter.js      # sessionStorage wrapper with fallback
-    └── utils.js                # `cn()` class-merging helper
+    ├── mastery-store.js      # Leitner-box spaced repetition
+    ├── session-manager.js    # Session state machine
+    ├── storage-adapter.js    # sessionStorage wrapper
+    └── utils.js              # cn() helper + getCardImageUrl()
 ```
 
 ---
 
-## 📚 Adding a New Deck
+## 📚 Deck Reference
 
-1. Create `src/data/decks/your-deck.js`:
+| # | Deck | Cards | Type |
+|---|------|-------|------|
+| 1 | Consonants (ព្យព្ជានៈ) | 33 | Literacy |
+| 2 | Subscripts (ជើងព្យព្ជានៈ) | 33 | Literacy |
+| 3 | Independent Vowels (ស្រៈពេញតួ) | 15 | Literacy ⚠️ |
+| 4 | Dependent Vowels (ស្រៈនិស្ស័យ) | 19 | Literacy ⚠️ |
+| 5 | Numbers (លេខ) | 11 | Vocabulary |
+| 6 | Greetings (ជម្រាបសួរ) | 11 | Vocabulary |
+| 7 | Family (គ្រួសារ) | 8 | Vocabulary |
+| 8 | Colors (ពណ៌) | 9 | Vocabulary |
+| 9 | Animals (សត្វ) | 12 | Vocabulary |
+| 10 | Food (អាហារ) | 10 | Vocabulary |
+| 11 | Body Parts (ផ្នែករាងកាយ) | 8 | Vocabulary |
+| 12 | Days (ថ្ងៃ) | 7 | Vocabulary |
+| 13 | Solar System (ប្រព័ន្ធព្រះអាទិត្យ) | 10 | Vocabulary |
+| 14 | Months (ខែ) | 12 | Vocabulary |
+| 15 | Time (ម៉ោង) | 10 | Vocabulary |
+| 16 | Daily Items (របស់ប្រើប្រាស់) | 12 | Vocabulary |
+| 17 | Buildings (អគារ) | 10 | Vocabulary |
+| 18 | Relatives (សាច់ញាតិ) | 10 | Vocabulary |
+| 19 | Feelings (អារម្មណ៍) | 8 | Vocabulary |
 
-   ```js
-   export const deckMeta = {
-     id: "your-deck",
-     title: "ចំណងជើងជាភាសាខ្មែរ",
-     titleEnglish: "Your Deck",
-     emoji: "🎈",
-     description: "One sentence describing this deck",
-     category: "vocabulary",               // or "literacy"
-     order: 10,                            // position in the deck list
-     needsVerification: true,              // optional: shows ⚠️ badge
-   };
-
-   const items = [
-     { khmer: "...", english: "...", emoji: "..." },
-   ];
-
-   export const cards = items.map((item, index) => ({
-     id: `your-deck-${index + 1}`,
-     khmer: item.khmer,
-     english: item.english,
-     emoji: item.emoji,
-     category: "your-deck",
-   }));
-   ```
-
-2. Register it in `src/data/deck-registry.js` (import + add to the `decks` array).
-
-The deck picker, session manager, and spaced-repetition store all read from the registry automatically.
+⚠️ = Vowel decks need native-speaker review (romanization labels based on Unicode names)
 
 ---
 
-## 🧠 Spaced Repetition
+## 📦 PWA
 
-Built-in Leitner-box system with 6 levels:
+The app is a full Progressive Web App:
 
-| Box | Interval | Label |
-|-----|----------|-------|
-| 0 | Immediate | Just missed / new — must re-study now |
-| 1 | 1 day | Beginning to stick |
-| 2 | 2 days | Getting familiar |
-| 3 | 4 days | Solid recognition |
-| 4 | 9 days | Strong recall |
-| 5 | 18 days | Mastered — longest gap before review |
-
-Cards move up when marked correct, drop to box 0 when missed. All progress persists in `localStorage` — no server needed.
-
----
-
-## ⚠️ Content Accuracy
-
-**Literacy decks** (consonants, subscripts) are mechanically generated from fixed Unicode data and intentionally avoid pairing letters with example words — traditional alphabet charts vary by source, and getting even one wrong in a kids' tool does more harm than leaving it out.
-
-**Vowel decks** include a visible "Pending review" badge — the romanization labels are based on Unicode character names and may need a native-speaker pass for regional accuracy.
-
-**Vocabulary decks** use common, everyday words (animals, colors, family, food, etc.). If a word doesn't match how your family says it, Khmer has regional/dialect variation — edit the relevant file in `src/data/decks/`.
+- **Installable** — "Add to Home Screen" on any supported browser
+- **Offline-capable** — service worker caches all static assets
+- **Auto-updating** — notification toast when a new version is available
+- **Push-ready** — push subscription infrastructure is wired up
 
 ---
 
@@ -161,10 +165,10 @@ Cards move up when marked correct, drop to box 0 when missed. All progress persi
 | Layer | Choice |
 |---|---|
 | Framework | Next.js 16.2 · React 19 |
-| Styling | Tailwind CSS 4 with custom Cambodian-palette theme |
-| UI primitives | Radix UI (Slot, Progress) + custom Badge/Button/Card |
-| Font | Noto Sans Khmer (via `next/font/google`) |
-| Speech | Web Speech API (browser-native TTS for Khmer) |
+| Styling | Tailwind CSS 4 (kids-friendly palette) |
+| Font | Noto Sans Khmer + Baloo 2 (display) via `next/font/google` |
+| Speech | Web Speech API (browser-native TTS) |
+| PWA | Custom service worker + manifest |
 | Storage | `localStorage` — no database, no accounts |
 | Bundler | Turbopack (dev) · Next.js compiler (prod) |
 
