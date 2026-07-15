@@ -23,7 +23,7 @@ export const deckMeta = {
 
 const items = [
   { khmer: "ព្រះអាទិត្យ", english: "Sun", emoji: "☀️" },
-  { khmer: "ព្រះច័ន្ទ", english: "Moon", emoji: "🌙" },
+  { khmer: "ព្រះចន្ទ", english: "Moon", emoji: "🌙" },
   { khmer: "ភពពុធ", english: "Mercury", emoji: "🪐" },
   { khmer: "ភពសុក្រ", english: "Venus", emoji: "🪐" },
   { khmer: "ភពផែនដី", english: "Earth", emoji: "🌍" },

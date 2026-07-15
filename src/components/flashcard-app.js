@@ -81,14 +81,14 @@ export function FlashcardApp() {
             >
               <img
                 src="/assets/icon.svg"
-                alt="Khmer Flashcards"
+                alt="Chesh"
                 className="w-10 h-10 sm:w-11 sm:h-11 shrink-0 drop-shadow-sm"
               />
               <div className="min-w-0">
-                <h1 className="khmer-text text-2xl sm:text-3xl font-extrabold display-text leading-tight truncate bg-gradient-to-r from-primary via-candy to-ocean bg-clip-text text-transparent animate-gradient">
-                  កាតរៀនភាសាខ្មែរ
+                <h1 className="text-2xl sm:text-3xl font-extrabold display-text leading-tight truncate bg-gradient-to-r from-primary via-candy to-ocean bg-clip-text text-transparent animate-gradient">
+                  Chesh
                 </h1>
-                <p className="text-xs font-medium text-muted-foreground leading-tight">Khmer Kids Flashcards</p>
+                <p className="text-xs font-medium text-muted-foreground leading-tight">ចេះភាសាខ្មែរ — Learn Khmer</p>
               </div>
             </button>
             <div className="flex items-center gap-2 shrink-0">

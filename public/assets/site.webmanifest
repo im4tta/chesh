@@ -1,7 +1,7 @@
 {
-  "name": "កាតរៀនភាសាខ្មែរ — Khmer Kids Flashcards",
-  "short_name": "Khmer Flashcards",
-  "description": "Bilingual Khmer/English flashcards for kids: alphabet, numbers, colors, animals, family, and more.",
+  "name": "Chesh — ចេះភាសាខ្មែរ",
+  "short_name": "Chesh",
+  "description": "Learn Khmer with Chesh — alphabet, vocabulary, numbers, and more.",
   "start_url": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],

@@ -99,7 +99,7 @@ public/images/decks/
 │   └── daughter.jpg        (កូនស្រី — Daughter)
 └── solar-system/
     ├── sun.jpg              (ព្រះអាទិត្យ — Sun)
-    ├── moon.jpg             (ព្រះច័ន្ទ — Moon)
+    ├── moon.jpg             (ព្រះចន្ទ — Moon)
     ├── mercury.jpg          (ភពពុធ — Mercury)
     ├── venus.jpg            (ភពសុក្រ — Venus)
     ├── earth.jpg            (ភពផែនដី — Earth)

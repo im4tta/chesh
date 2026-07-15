@@ -9,7 +9,7 @@ export const deckMeta = {
 };
 
 const items = [
-  { khmer: "ថ្ងៃច័ន្ទ", english: "Monday", emoji: "🌙" },
+  { khmer: "ថ្ងៃចន្ទ", english: "Monday", emoji: "🌙" },
   { khmer: "ថ្ងៃអង្គារ", english: "Tuesday", emoji: "🔥" },
   { khmer: "ថ្ងៃពុធ", english: "Wednesday", emoji: "💧" },
   { khmer: "ថ្ងៃព្រហស្បតិ៍", english: "Thursday", emoji: "🌳" },

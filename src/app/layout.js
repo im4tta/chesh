@@ -27,13 +27,13 @@ const baloo = Baloo_2({
 });
 
 export const metadata = {
-  title: "កាតរៀនភាសាខ្មែរ — Khmer Kids Flashcards",
-  description: "Bilingual Khmer/English flashcards for kids: alphabet, numbers, colors, animals, family, and more.",
+  title: "Chesh — ចេះភាសាខ្មែរ",
+  description: "Chesh helps you learn Khmer — alphabet, vocabulary, numbers, and more.",
   manifest: "/assets/site.webmanifest",
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
-    "apple-mobile-web-app-title": "Khmer Flashcards",
+    "apple-mobile-web-app-title": "Chesh",
     "mobile-web-app-capable": "yes",
   },
 };

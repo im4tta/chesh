@@ -5,3 +5,6 @@ build
 *.log
 .env*.local
 .DS_Store
+*.md
+!README.md
+!public/images/decks/README.md
