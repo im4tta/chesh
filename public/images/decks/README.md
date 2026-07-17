@@ -8,26 +8,49 @@ up automatically. No code changes needed.
 ## Where to put files
 
 ```
-public/images/decks/{deckId}/{cardId}.{ext}
+public/images/decks/{deckId}/{filename}.{ext}
 ```
 
 - `deckId` — the deck's id, e.g. `animals`, `colors`, `family`
   (see `src/data/deck-registry.js` / `src/data/decks/*.js`)
-- `cardId` — the card's id, e.g. `animal-1`, `color-3`
-  (see the `cards` export in the matching `src/data/decks/*.js` file)
+- `filename` — see "Naming" below
 - `ext` — one of `png`, `jpg`, `jpeg`, `webp`
 
-Example:
+## Naming
 
-```
-public/images/decks/animals/animal-1.png   →  ឆ្កែ / Dog
-public/images/decks/colors/color-3.png     →  the 3rd color card
+The app looks for images by **slugified English name** first, then falls back
+to the **card ID**. Use the English name whenever possible — the slugify
+function lowercases the English text and replaces every run of
+non-alphanumeric characters with a single dash (`-`).
+
+| English name (in deck file) | Slugified filename | Example |
+|---|---|---|
+| `"Dog"` | `dog` | `public/images/decks/animals/dog.jpg` |
+| `"Hand / Arm"` | `hand-arm` | `public/images/decks/body-parts/hand-arm.jpg` |
+| `"Thank you"` | `thank-you` | `public/images/decks/greetings/thank-you.jpg` |
+| `"Seller / Shopkeeper"` | `seller-shopkeeper` | `public/images/decks/jobs/seller-shopkeeper.jpg` |
+| `"Uncle (younger than parent)"` | `uncle-younger-than-parent` | `public/images/decks/relatives/uncle-younger-than-parent.jpg` |
+
+> **Important:** Special characters (`/`, `(`, `)`, `&`, `#`, `:`, `"`, etc.)
+> are all stripped and replaced by a single `-`. Never use double (`--`) or
+> triple (`---`) dashes in filenames — the slugifier collapses them into one.
+
+To rename existing files to match the expected naming:
+
+```powershell
+# Example: fix double-dash filenames
+Get-ChildItem "public/images/decks/relatives/*--*.jpg" | Rename-Item -NewName { $_.Name -replace '--', '-' }
 ```
 
 ## Notes
 
 - Missing a card's image is fine — the app quietly falls back to its emoji.
+- After adding or renaming images, rebuild the static export:
+  ```bash
+  npm run build
+  ```
 - Review every generated image yourself before adding it here — this app
   is for kids, so double-check each image is clearly appropriate,
   age-suitable, and actually matches the word before dropping it in.
 - Keep images roughly square (the UI displays them at a fixed square size).
+- Check `src/lib/utils.js` for the exact `slugify()` implementation.

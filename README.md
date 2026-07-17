@@ -30,7 +30,7 @@ Pick a deck and start flipping cards.
 | | Feature | |
 |---|---|---|
 | 🎨 | **Kids-friendly UI** | Bright candy palette, big emoji, playful animations, extra-rounded corners |
-| 📚 | **19 decks** | Consonants → subscripts → vowels → numbers → colors → animals → food → family → body parts → solar system → days → months → time → daily items → buildings → relatives → feelings |
+| 📚 | **24 decks** | Consonants → subscripts → vowels → numbers → colors → greetings → family → animals → food → body parts → days → solar system → months → time → daily items → buildings → relatives → feelings → weather → transportation → nature → fruits → jobs |
 | 🆎 | **Vowel coverage** | Independent vowels & dependent vowel signs, flagged for native-speaker review |
 | 🔤 | **Proper Khmer rendering** | Noto Sans Khmer via `next/font/google` for correct script display |
 | 🖼️ | **Auto-detected images** | Drop kid-safe photos into `public/images/decks/{deckId}/{cardId}.jpg` — they appear on cards automatically |
@@ -81,8 +81,25 @@ Correct answers promote a card up one box. Wrong answers drop it back to box 0. 
 The app uses **emoji-only by default** (safe for everyone). To add real photos:
 
 1. Generate kid-safe images (see [IMAGE_SETUP.md](IMAGE_SETUP.md) for Gemini prompt templates)
-2. Save to `public/images/decks/{deckId}/{cardId}.jpg`
+2. Save to `public/images/decks/{deckId}/{filename}.{ext}`
 3. Restart the dev server — images appear automatically next to each card's emoji
+
+### Image naming
+
+The app tries two filename patterns (in order):
+
+1. **Slugified English name** — the card's `english` label, lowercased with all non-alphanumeric characters replaced by a single `-`. For `english: "Hand / Arm"` → `hand-arm.jpg`.
+2. **Card ID fallback** — the card's `id` field, e.g. `body-7.jpg`.
+
+Place the file as `public/images/decks/{deckId}/{stem}.{ext}` where `ext` is one of `png`, `jpg`, `jpeg`, `webp`.
+
+> **Common pitfalls &raquo;** Special characters in English names (`/`, `(`, `)`, `&`, `#`) are stripped by the slugifier. `"Cart / Wagon"` becomes `cart-wagon`, not `cart---wagon` or any other variant. Always match the **exact** slugify() output — see [src/lib/utils.js](src/lib/utils.js) for the logic.
+
+### Verifying
+
+```bash
+npm run build    # rebuilds the static export into out/
+```
 
 Missing images are handled silently (emoji fallback). You can add images one deck at a time.
 
@@ -124,13 +141,13 @@ src/
 ## 📚 Deck Reference
 
 | # | Deck | Cards | Type |
-|---|------|-------|------|
+|   |------|-------|------|
 | 1 | Consonants (ព្យព្ជានៈ) | 33 | Literacy |
 | 2 | Subscripts (ជើងព្យព្ជានៈ) | 33 | Literacy |
 | 3 | Independent Vowels (ស្រៈពេញតួ) | 15 | Literacy ⚠️ |
 | 4 | Dependent Vowels (ស្រៈនិស្ស័យ) | 19 | Literacy ⚠️ |
 | 5 | Numbers (លេខ) | 11 | Vocabulary |
-| 6 | Greetings (ជម្រាបសួរ) | 11 | Vocabulary |
+| 6 | Greetings & Phrases (ការស្វាគមន៍) | 8 | Vocabulary |
 | 7 | Family (គ្រួសារ) | 8 | Vocabulary |
 | 8 | Colors (ពណ៌) | 9 | Vocabulary |
 | 9 | Animals (សត្វ) | 12 | Vocabulary |
@@ -140,10 +157,15 @@ src/
 | 13 | Solar System (ប្រព័ន្ធព្រះអាទិត្យ) | 10 | Vocabulary |
 | 14 | Months (ខែ) | 12 | Vocabulary |
 | 15 | Time (ម៉ោង) | 10 | Vocabulary |
-| 16 | Daily Items (របស់ប្រើប្រាស់) | 12 | Vocabulary |
-| 17 | Buildings (អគារ) | 10 | Vocabulary |
+| 16 | Everyday Items (របស់របរប្រចាំថ្ងៃ) | 12 | Vocabulary |
+| 17 | Buildings & Places (អគារ និងកន្លែង) | 10 | Vocabulary |
 | 18 | Relatives (សាច់ញាតិ) | 10 | Vocabulary |
-| 19 | Feelings (អារម្មណ៍) | 8 | Vocabulary |
+| 19 | Feelings (អារម្មណ៍) | 10 | Vocabulary |
+| 20 | Weather (អាកាសធាតុ) | 12 | Vocabulary |
+| 21 | Transportation (យានជំនិះ) | 10 | Vocabulary |
+| 22 | Nature (ធម្មជាតិ) | 10 | Vocabulary |
+| 23 | Fruits (ផ្លែឈើ) | 10 | Vocabulary |
+| 24 | Jobs & Professions (មុខរបរ) | 10 | Vocabulary |
 
 ⚠️ = Vowel decks need native-speaker review (romanization labels based on Unicode names)
 
