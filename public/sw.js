@@ -1,10 +1,14 @@
 const CACHE = "khmer-flashcards-v1";
+
+const BASE = self.location.pathname.replace(/sw\.js$/, "");
+const p = (path) => BASE + path;
+
 const STATIC_ASSETS = [
-  "/",
-  "/manifest.json",
-  "/icon.svg",
-  "/icon-192.svg",
-  "/icon-512.svg",
+  p(""),
+  p("manifest.json"),
+  p("icon.svg"),
+  p("icon-192.svg"),
+  p("icon-512.svg"),
 ];
 
 self.addEventListener("install", (event) => {
@@ -72,21 +76,21 @@ self.addEventListener("push", (event) => {
     const data = event.data.json();
     self.registration.showNotification(data.title || "Khmer Flashcards", {
       body: data.body || "",
-      icon: "/icon-192.svg",
-      badge: "/icon-192.svg",
+      icon: p("icon-192.svg"),
+      badge: p("icon-192.svg"),
       data: data.url ? { url: data.url } : undefined,
     });
   } catch {
     self.registration.showNotification("Khmer Flashcards", {
       body: event.data.text(),
-      icon: "/icon-192.svg",
+      icon: p("icon-192.svg"),
     });
   }
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const urlToOpen = event.notification.data?.url || "/";
+  const urlToOpen = event.notification.data?.url || p("");
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
       const matching = clients.find((c) => c.url === urlToOpen);

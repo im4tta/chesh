@@ -10,7 +10,8 @@ export function UpdateToast() {
     if (!("serviceWorker" in navigator)) return;
 
     const registerSW = async () => {
-      const registration = await navigator.serviceWorker.register("/sw.js");
+      const base = process.env.NEXT_PUBLIC_BASE_PATH || "";
+      const registration = await navigator.serviceWorker.register(`${base}/sw.js`, { scope: `${base}/` });
       if (registration.waiting) {
         setWaitingWorker(registration.waiting);
         setShow(true);
