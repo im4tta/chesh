@@ -141,7 +141,7 @@ src/
 ## 📚 Deck Reference
 
 | # | Deck | Cards | Type |
-|   |------|-------|------|
+|---|------|-------|------|
 | 1 | Consonants (ព្យព្ជានៈ) | 33 | Literacy |
 | 2 | Subscripts (ជើងព្យព្ជានៈ) | 33 | Literacy |
 | 3 | Independent Vowels (ស្រៈពេញតួ) | 15 | Literacy ⚠️ |
