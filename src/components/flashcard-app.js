@@ -114,7 +114,7 @@ export function FlashcardApp() {
           <DeckSelector key={refreshKey} onSelectDeck={handleSelectDeck} lastSessionStats={lastSessionStats} />
         )}
         {appState === APP_STATES.SESSION && (
-          <FlashcardSession onEndSession={handleBackToMenu} onStartNewSession={handleSelectDeck} />
+          <FlashcardSession onEndSession={handleBackToMenu} />
         )}
       </main>
 

@@ -9,7 +9,7 @@ import { LessonContent } from "./lesson-content";
 import { useSession } from "@/hooks/use-session";
 import { useEscapeKey } from "@/hooks/use-keyboard";
 
-export function FlashcardSession({ onEndSession, onStartNewSession }) {
+export function FlashcardSession({ onEndSession }) {
   const {
     session,
     currentCard,
@@ -51,7 +51,9 @@ export function FlashcardSession({ onEndSession, onStartNewSession }) {
   const handleStartNewSession = () => {
     setShowResults(false);
     setFinalStats(null);
-    if (onStartNewSession) onStartNewSession(session?.deckId);
+    if (session?.deckId) {
+      createNewSession(session.deckId, session.cards?.length ?? Infinity);
+    }
   };
 
   if (!isSessionActive) {
