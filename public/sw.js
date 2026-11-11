@@ -1,4 +1,4 @@
-const CACHE = "khmer-flashcards-v1";
+const CACHE = "khmer-flashcards-v2";
 
 const BASE = self.location.pathname.replace(/sw\.js$/, "");
 const p = (path) => BASE + path;

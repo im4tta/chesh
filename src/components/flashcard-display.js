@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCardImageUrls } from "@/lib/utils";
 import { useFlashcardKeyboard } from "@/hooks/use-keyboard";
 import { useSpeech } from "@/hooks/use-speech";
+import { getLearningKhmerAudio } from "@/lib/learning-khmer-audio";
 import { SESSION_STATES } from "@/lib/session-manager";
 import { masteryStore, onMasteryChange, MAX_BOX } from "@/lib/mastery-store";
 
@@ -155,7 +156,26 @@ export function FlashcardDisplay({
   const [canMarkAnswer, setCanMarkAnswer] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
   const { edge, handleMouseMove, handleMouseLeave } = useEdgeGlow();
+  const audioPlayRef = useRef(null);
   const { speak, supported: speechSupported } = useSpeech();
+  const audioUrl = getLearningKhmerAudio(deckId, card?.id);
+
+  useEffect(() => {
+    if (!audioUrl) return;
+    const audio = new Audio(audioUrl);
+    const play = () => {
+      window.speechSynthesis?.cancel();
+      audio.currentTime = 0;
+      audio.play().catch((error) => {
+        if (error.name !== "AbortError") speak(card.khmer);
+      });
+    };
+    audioPlayRef.current = play;
+    return () => {
+      audio.pause();
+      audioPlayRef.current = null;
+    };
+  }, [audioUrl, card?.khmer, speak]);
 
   useEffect(() => {
     setShowAnswer(sessionState === SESSION_STATES.SHOW_ANSWER);
@@ -217,9 +237,9 @@ export function FlashcardDisplay({
             <p className="khmer-text text-5xl sm:text-6xl font-bold leading-relaxed text-foreground">
               {card.khmer}
             </p>
-            {speechSupported && (
+            {(audioUrl || speechSupported) && (
               <button
-                onClick={() => speak(card.khmer)}
+                onClick={() => audioUrl && audioPlayRef.current ? audioPlayRef.current() : speak(card.khmer)}
                 aria-label="Listen"
                 className="shrink-0 w-12 h-12 rounded-full bg-ocean/10 hover:bg-ocean/20 text-ocean flex items-center justify-center transition-all active:scale-90 text-xl"
               >

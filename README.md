@@ -199,3 +199,18 @@ The app is a full Progressive Web App:
 ## 📄 License
 
 MIT — see [LICENSE](./LICENSE). Educational content (Khmer words/translations) is provided as-is for personal/family use.
+
+### Learning Khmer lessons
+
+Open **Learning Khmer lessons** from the deck picker to explore 15 spelling,
+reading, and conversation lessons adapted from the supplied Learning Khmer
+(ReanKhmer) v0.0.1-beta1 database. Reading lessons include recordings and
+available multiple-choice questions; conversations include recordings and
+illustrations for individual lines. The consonants and numbers decks also use
+recordings from the original distribution, with browser speech as a fallback.
+Media is cached after it is played or viewed for offline use.
+
+The original Windows/Flash activities have not all been recreated. One reading
+question has no correct answer marked in the source database and is omitted.
+The original archive does not include a clear license for its media or lesson
+content; confirm permission before redistributing them.

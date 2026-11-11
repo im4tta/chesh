@@ -68,7 +68,7 @@ function CategoryHeader({ title, titleEnglish, description }) {
   );
 }
 
-export function DeckSelector({ onSelectDeck, lastSessionStats = null }) {
+export function DeckSelector({ onSelectDeck, onOpenLessons, lastSessionStats = null }) {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("order");
 
@@ -109,6 +109,12 @@ export function DeckSelector({ onSelectDeck, lastSessionStats = null }) {
         </h2>
         <p className="text-muted-foreground text-base font-medium">Pick a deck to study! 🎈</p>
       </div>
+
+      <button onClick={onOpenLessons} className="w-full rounded-3xl border-4 border-ocean/30 bg-card p-5 text-left hover:border-ocean hover:shadow-lg transition-all">
+        <span className="text-3xl mr-3" aria-hidden="true">📖</span>
+        <span className="font-extrabold text-lg">Learning Khmer lessons</span>
+        <span className="block text-sm text-muted-foreground mt-1">Read passages and listen to conversations →</span>
+      </button>
 
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center max-w-2xl mx-auto">
         <div className="flex-1 relative">

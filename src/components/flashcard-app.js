@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { LearningKhmerLessons } from "./learning-khmer-lessons";
 import { DeckSelector } from "./deck-selector";
 import { FlashcardSession } from "./flashcard-session";
 import { useSession } from "@/hooks/use-session";
@@ -9,6 +10,7 @@ import { masteryStore } from "@/lib/mastery-store";
 const APP_STATES = {
   DECKS: "DECKS",
   SESSION: "SESSION",
+  LESSONS: "LESSONS",
 };
 
 export function FlashcardApp() {
@@ -111,7 +113,10 @@ export function FlashcardApp() {
 
       <main className="container mx-auto px-4 py-4 sm:py-6 flex-1">
         {appState === APP_STATES.DECKS && (
-          <DeckSelector key={refreshKey} onSelectDeck={handleSelectDeck} lastSessionStats={lastSessionStats} />
+          <DeckSelector key={refreshKey} onSelectDeck={handleSelectDeck} lastSessionStats={lastSessionStats} onOpenLessons={() => setAppState(APP_STATES.LESSONS)} />
+        )}
+        {appState === APP_STATES.LESSONS && (
+          <LearningKhmerLessons onBack={() => setAppState(APP_STATES.DECKS)} />
         )}
         {appState === APP_STATES.SESSION && (
           <FlashcardSession onEndSession={handleBackToMenu} />
